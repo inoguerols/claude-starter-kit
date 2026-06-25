@@ -134,3 +134,7 @@ Cosas populares que **no** instala el kit a propósito, para no duplicar lo que 
   vigilar PRs, barrer CI…), mira [`cobusgreyling/loop-engineering`](https://github.com/cobusgreyling/loop-engineering).
   La mecánica (worktrees, sub-agentes, scheduling) ya la tienes vía **ecc** (`/ecc:loop-start`,
   `autonomous-loops`, …); ese repo aporta los patrones curados y las CLIs de coste/auditoría.
+
+## Licencia
+
+[MIT](LICENSE) © Ignacio Noguerol.
