@@ -9,6 +9,21 @@ ok() { printf '  \033[32m✔\033[0m %s\n' "$*"; }
 warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 die() { printf '\033[31m✖ %s\033[0m\n' "$*" >&2; exit 1; }
 
+# la instalación nativa deja el binario en ~/.local/bin; persiste ese dir en el
+# PATH del shell del usuario (idempotente) para que 'claude' funcione en terminales nuevas.
+persist_path() {
+  local bindir="$HOME/.local/bin"
+  [ -x "$bindir/claude" ] || return 0
+  case ":$PATH:" in *":$bindir:"*) ;; *) export PATH="$bindir:$PATH";; esac
+  local line='export PATH="$HOME/.local/bin:$PATH"'
+  for rc in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.profile"; do
+    [ -f "$rc" ] || continue
+    grep -qF '.local/bin' "$rc" 2>/dev/null && continue
+    printf '\n# claude-starter-kit\n%s\n' "$line" >> "$rc"
+    ok "PATH añadido a $(basename "$rc") (reinicia la terminal o: source $rc)"
+  done
+}
+
 CLAUDE_DIR="$HOME/.claude"
 HOOKS_DIR="$CLAUDE_DIR/hooks"
 SKILLS_DIR="$CLAUDE_DIR/skills"
@@ -27,8 +42,8 @@ if ! command -v claude >/dev/null 2>&1; then
   if curl -fsSL https://claude.ai/install.sh | bash; then :;
   elif command -v npm >/dev/null 2>&1; then npm install -g @anthropic-ai/claude-code;
   else die "No pude instalar Claude Code. Instálalo con: npm install -g @anthropic-ai/claude-code"; fi
-  export PATH="$HOME/.local/bin:$PATH"
 fi
+persist_path  # asegura ~/.local/bin en el PATH (este shell y los futuros)
 command -v claude >/dev/null 2>&1 || die "Claude Code instalado pero no está en PATH. Abre una terminal nueva y vuelve a correr esto."
 ok "$(claude --version 2>/dev/null | head -1)"
 
