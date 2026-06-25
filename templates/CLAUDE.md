@@ -25,7 +25,10 @@ Estas reglas aplican a todos los proyectos. Bórralas o adáptalas a tu gusto.
   **workflows en paralelo** y asigna el modelo por tarea: **Opus** para lo crítico (dinero,
   seguridad, lógica compleja), **Sonnet** para UI/API, **Haiku** para andamiaje. Para cambios
   pequeños, directo sin orquestar.
-- **Pregunta cuando no esté claro** en vez de asumir. Una pregunta corta ahorra un rehacer largo.
+- **Piensa antes de codear.** Declara tus supuestos y, si algo es ambiguo, dilo y pregunta en
+  vez de asumir en silencio. Una pregunta corta ahorra un rehacer largo.
+- **Ejecución dirigida a objetivo.** Antes de empezar, fija el criterio de éxito; al acabar,
+  verifícalo de verdad (corre el código o los tests), no lo des por hecho.
 
 ## Memoria persistente
 

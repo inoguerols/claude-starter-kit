@@ -60,3 +60,15 @@ claude            # abre Claude Code
 - **Manual**: si quieres forzar una actualización ya, re-corre la línea de instalación.
 - **El repo**: un GitHub Action semanal comprueba que las fuentes upstream siguen vivas
   y abre un issue si alguna se mueve o desaparece — así el instalador no se pudre en silencio.
+
+## Siguiente nivel
+
+Cosas populares que **no** instala el kit a propósito, para no duplicar lo que ya trae:
+
+- **Principios de Karpathy** (Think Before Coding · Simplicity First · Surgical Changes ·
+  Goal-Driven Execution): ya van de serie vía **ponytail** + el `CLAUDE.md` de buenas prácticas.
+  No hace falta el plugin aparte.
+- **Loops autónomos**: cuando quieras que Claude trabaje solo sobre tu repo (triage diario,
+  vigilar PRs, barrer CI…), mira [`cobusgreyling/loop-engineering`](https://github.com/cobusgreyling/loop-engineering).
+  La mecánica (worktrees, sub-agentes, scheduling) ya la tienes vía **ecc** (`/ecc:loop-start`,
+  `autonomous-loops`, …); ese repo aporta los patrones curados y las CLIs de coste/auditoría.
