@@ -12,8 +12,22 @@ curl -fsSL https://raw.githubusercontent.com/inoguerols/claude-starter-kit/main/
 Eso es todo. Si no tienes Claude Code, te lo instala. **Para actualizar en el futuro,
 vuelve a correr la misma línea** (es idempotente).
 
-> **Windows:** ejecútalo dentro de **WSL** o **Git Bash**. macOS y Linux funcionan tal cual.
-> Recomendado tener `jq` instalado (para fusionar la config de seguridad sin pisar la tuya).
+> En **macOS y Linux** funciona tal cual (la terminal ya trae todo).
+> Recomendado tener `jq` (`brew install jq` en Mac). Si falta, el instalador avisa y sigue.
+
+### Windows: prepara la terminal una vez
+
+El comando de arriba necesita una terminal tipo Linux. Elige **una** opción y, dentro de ella, pega el comando de instalación:
+
+**Opción A — WSL (recomendada):**
+1. Abre **PowerShell como administrador** (botón derecho → "Ejecutar como administrador").
+2. Ejecuta: `wsl --install`
+3. Reinicia el ordenador cuando lo pida.
+4. Abre **"Ubuntu"** desde el menú Inicio y pega ahí el comando de instalación.
+
+**Opción B — Git Bash:**
+1. Descarga e instala Git desde **https://git-scm.com/download/win** (deja las opciones por defecto).
+2. Abre **"Git Bash"** desde el menú Inicio y pega ahí el comando de instalación.
 
 ## Qué instala
 
@@ -34,6 +48,9 @@ claude            # abre Claude Code
 /ponytail         # modo vago
 /obsidian-init    # prepara tu segundo cerebro
 ```
+
+> **La primera vez** que abras `claude` te pedirá iniciar sesión: se abre el navegador
+> y entras con tu cuenta de Claude. Si no tienes, créala en https://claude.ai. Solo pasa una vez.
 
 ## Mantenimiento
 
