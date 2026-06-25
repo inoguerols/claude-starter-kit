@@ -1,0 +1,44 @@
+name: check-upstreams
+# Comprueba semanalmente que las fuentes que instala el kit siguen vivas.
+# Si alguna se mueve o desaparece, abre un issue y falla el workflow.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # lunes 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Ping upstreams
+        run: |
+          set -u
+          upstreams=(
+            "https://github.com/DietrichGebert/ponytail.git"
+            "https://github.com/affaan-m/ECC.git"
+            "https://github.com/anthropics/claude-plugins-official.git"
+            "https://github.com/txampa/claude-code-security-kit.git"
+            "https://github.com/eugeniughelbur/obsidian-second-brain.git"
+          )
+          failed=""
+          for u in "${upstreams[@]}"; do
+            if git ls-remote --exit-code "$u" >/dev/null 2>&1; then
+              echo "ok   $u"
+            else
+              echo "FAIL $u"; failed="$failed- $u"$'\n'
+            fi
+          done
+          if [ -n "$failed" ]; then
+            title="⚠️ Upstream(s) inalcanzable(s) en check-upstreams"
+            body=$'Una o más fuentes que instala el kit no responden:\n\n'"$failed"$'\nRevisa si cambiaron de nombre/rama y actualiza install.sh.'
+            existing=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number' 2>/dev/null || true)
+            if [ -n "$existing" ]; then gh issue comment "$existing" --body "$body";
+            else gh issue create --title "$title" --body "$body"; fi
+            exit 1
+          fi
