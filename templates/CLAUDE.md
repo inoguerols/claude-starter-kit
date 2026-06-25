@@ -16,6 +16,15 @@ Estas reglas aplican a todos los proyectos. Bórralas o adáptalas a tu gusto.
   evita escaneos de tabla completa, recálculos masivos y refrescos totales innecesarios.
 - **Una sesión por worktree.** Si abres varias sesiones de Claude en el mismo repo a la vez,
   cada una en su propio `git worktree` para no pisaros.
+- **UI con shadcn/ui por defecto.** Para interfaces usa **shadcn/ui** (Tailwind + Radix):
+  componentes accesibles y estándar en lugar de HTML+CSS a medida. Inicializa con
+  `npx shadcn@latest init -d` y añade componentes con `npx shadcn@latest add <componente>`.
+  Reserva el CSS plano para casos muy simples. (El skill `vercel:shadcn` da el detalle.)
+- **Trabajo grande → workflows con el modelo adecuado por tarea.** Para tareas multi-archivo o
+  de varias fases (migraciones, features completas, auditorías, revisiones), orquesta con
+  **workflows en paralelo** y asigna el modelo por tarea: **Opus** para lo crítico (dinero,
+  seguridad, lógica compleja), **Sonnet** para UI/API, **Haiku** para andamiaje. Para cambios
+  pequeños, directo sin orquestar.
 - **Pregunta cuando no esté claro** en vez de asumir. Una pregunta corta ahorra un rehacer largo.
 
 ## Memoria persistente
