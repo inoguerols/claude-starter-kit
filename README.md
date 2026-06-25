@@ -37,6 +37,9 @@ claude            # abre Claude Code
 
 ## Mantenimiento
 
-- **Tú**: re-corre la línea de instalación cuando quieras actualizar todo.
+- **Automático**: al abrir Claude Code, un hook `SessionStart` actualiza plugins y skills
+  en segundo plano, en silencio, como mucho **una vez al día** (log en `~/.claude/.starter-kit-update.log`).
+  No tienes que hacer nada.
+- **Manual**: si quieres forzar una actualización ya, re-corre la línea de instalación.
 - **El repo**: un GitHub Action semanal comprueba que las fuentes upstream siguen vivas
   y abre un issue si alguna se mueve o desaparece — así el instalador no se pudre en silencio.

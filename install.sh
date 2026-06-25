@@ -64,24 +64,29 @@ else git clone --quiet https://github.com/txampa/claude-code-security-kit.git "$
 for f in "$SEC_DIR"/hooks/*.sh; do install -m 0755 "$f" "$HOOKS_DIR/$(basename "$f")"; done
 ok "hooks copiados a $HOOKS_DIR"
 
-# merge de settings.template.json (rutas → \$HOME) en ~/.claude/settings.json
+# hook de auto-actualización (corre al iniciar Claude, en background, 1×/día)
+curl -fsSL "$RAW_BASE/hooks/autoupdate.sh" -o "$HOOKS_DIR/starter-kit-autoupdate.sh" \
+  && chmod +x "$HOOKS_DIR/starter-kit-autoupdate.sh" && ok "auto-actualización instalada" \
+  || warn "no pude instalar el hook de auto-actualización"
+
+# merge de settings: permisos + hooks de seguridad (rutas → \$HOME) + SessionStart de auto-update
 TPL="$(sed 's#\$CLAUDE_PROJECT_DIR/.claude/hooks#$HOME/.claude/hooks#g' "$SEC_DIR/settings.template.json")"
 SETTINGS="$CLAUDE_DIR/settings.json"
+SU='[{"hooks":[{"type":"command","command":"bash \"$HOME/.claude/hooks/starter-kit-autoupdate.sh\"","async":true}]}]'
 if [ "$HAVE_JQ" -eq 0 ]; then
-  warn "jq no instalado: no fusiono settings automáticamente."
-  warn "Instala jq y re-ejecuta, o mete a mano: $SEC_DIR/settings.template.json"
-elif [ ! -f "$SETTINGS" ]; then
-  printf '%s' "$TPL" > "$SETTINGS"; ok "settings.json creado"
+  warn "jq no instalado: no fusiono settings ni activo la auto-actualización."
+  warn "Instala jq y re-ejecuta. Plantilla a mano: $SEC_DIR/settings.template.json"
 else
-  cp "$SETTINGS" "$SETTINGS.bak"
-  printf '%s' "$TPL" | jq -s '
+  [ -f "$SETTINGS" ] && cp "$SETTINGS" "$SETTINGS.bak" || echo '{}' > "$SETTINGS.bak"
+  printf '%s' "$TPL" | jq -s --argjson su "$SU" '
     .[0] as $cur | .[1] as $tpl | $cur
-    | .permissions.deny  = (((.permissions.deny  // []) + ($tpl.permissions.deny  // [])) | unique)
-    | .permissions.ask   = (((.permissions.ask   // []) + ($tpl.permissions.ask   // [])) | unique)
-    | .permissions.allow = (((.permissions.allow // []) + ($tpl.permissions.allow // [])) | unique)
-    | .hooks.PreToolUse  = (((.hooks.PreToolUse  // []) + ($tpl.hooks.PreToolUse  // [])) | unique)
+    | .permissions.deny   = (((.permissions.deny   // []) + ($tpl.permissions.deny   // [])) | unique)
+    | .permissions.ask    = (((.permissions.ask    // []) + ($tpl.permissions.ask    // [])) | unique)
+    | .permissions.allow  = (((.permissions.allow  // []) + ($tpl.permissions.allow  // [])) | unique)
+    | .hooks.PreToolUse   = (((.hooks.PreToolUse   // []) + ($tpl.hooks.PreToolUse   // [])) | unique)
+    | .hooks.SessionStart = (((.hooks.SessionStart // []) + $su) | unique)
   ' "$SETTINGS.bak" /dev/stdin > "$SETTINGS"
-  ok "settings.json fusionado (backup en settings.json.bak)"
+  ok "settings.json fusionado + auto-actualización activada (backup en settings.json.bak)"
 fi
 
 # --- 4. segundo cerebro Obsidian --------------------------------------------
