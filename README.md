@@ -10,14 +10,22 @@ curl -fsSL https://raw.githubusercontent.com/inoguerols/claude-starter-kit/main/
 ```
 
 Eso es todo. Si no tienes Claude Code, te lo instala. **Para actualizar en el futuro,
-vuelve a correr la misma línea** (es idempotente).
+vuelve a correr la misma línea** (es idempotente: no duplica nada).
 
-> En **macOS y Linux** funciona tal cual (la terminal ya trae todo).
-> Recomendado tener `jq` (`brew install jq` en Mac). Si falta, el instalador avisa y sigue.
+## Requisitos
 
-### Windows: prepara la terminal una vez
+- **`git`** (obligatorio). El instalador para si no lo encuentra.
+- **`jq`** (recomendado). Sin él, el instalador **no fusiona `settings.json`** (ni permisos ni
+  hooks de seguridad ni auto-actualización): instala el resto y te avisa. En Mac: `brew install jq`.
+- **Claude Code**: si no está, el instalador lo instala (vía `claude.ai/install.sh`, o `npm` como
+  respaldo) y añade `~/.local/bin` a tu `PATH`.
 
-El comando de arriba necesita una terminal tipo Linux. Elige **una** opción y, dentro de ella, pega el comando de instalación:
+> En **macOS y Linux** funciona tal cual. En **Windows** necesitas una terminal tipo Linux:
+
+<details>
+<summary><b>Windows: prepara la terminal una vez</b></summary>
+
+Elige **una** opción y, dentro de ella, pega el comando de instalación:
 
 **Opción A — WSL (recomendada):**
 1. Abre **PowerShell como administrador** (botón derecho → "Ejecutar como administrador").
@@ -28,24 +36,54 @@ El comando de arriba necesita una terminal tipo Linux. Elige **una** opción y, 
 **Opción B — Git Bash:**
 1. Descarga e instala Git desde **https://git-scm.com/download/win** (deja las opciones por defecto).
 2. Abre **"Git Bash"** desde el menú Inicio y pega ahí el comando de instalación.
+</details>
 
 ## Qué instala
 
 | Pieza | Para qué |
 |---|---|
-| **ponytail** | Modo "vago": código mínimo, nada de sobre-ingeniería. |
-| **ecc** | Agentes de review, testing y orquestación (`/ecc:code-review`, `/ecc:plan`, …). |
+| **ponytail** | Modo "vago": código mínimo, nada de sobre-ingeniería. Comando `/ponytail`. |
+| **ecc** | Agentes de review, testing y orquestación (`/ecc:code-review`, `/ecc:plan`, loops…). |
 | **vercel** | Desplegar en Vercel desde Claude. |
 | **security-guidance** (oficial Anthropic) | Detecta vulnerabilidades mientras programas. |
 | **claude-code-security-kit** (de [txampa](https://github.com/txampa/claude-code-security-kit)) | Hooks que bloquean comandos peligrosos y escanean secretos antes de cada acción. |
 | **obsidian-second-brain** | Notas, board y research que se auto-mantienen. `/obsidian-init` para arrancar. |
-| **CLAUDE.md** | Buenas prácticas + memoria persistente (no sobrescribe si ya tienes uno). |
+| **CLAUDE.md** | Buenas prácticas + memoria persistente (solo si no tienes ya uno). |
+
+Los plugins se instalan **a nivel de usuario** (`-s user`), así que valen para todos tus proyectos.
+
+## Qué cambia en tu sistema
+
+Transparencia total — el instalador solo toca tu carpeta `~/.claude`:
+
+| Ruta | Qué pasa |
+|---|---|
+| `~/.claude/settings.json` | **Se fusiona** (no se reemplaza): añade reglas de permiso `deny`/`ask`, los hooks de seguridad (`PreToolUse`) y la auto-actualización (`SessionStart`). Backup en `settings.json.bak`. |
+| `~/.claude/hooks/*.sh` | Se copian los hooks de seguridad de txampa + el de auto-actualización. |
+| `~/.claude/CLAUDE.md` | Se crea con las buenas prácticas **solo si no existe**. Si ya tienes uno, **no se toca**. |
+| `~/.claude/skills/obsidian-second-brain/` | Skill + comandos del segundo cerebro. |
+| `~/.claude/.cache/claude-code-security-kit/` | Copia de trabajo del kit de seguridad (para actualizarse). |
+
+Nada fuera de `~/.claude` se modifica (salvo añadir `~/.local/bin` a tu `PATH` si tuvo que instalar Claude Code).
+
+## Hooks de seguridad
+
+El kit de [txampa](https://github.com/txampa/claude-code-security-kit) instala tres guardas que
+corren **antes** de cada acción:
+
+- **`pre-bash-safety`** — bloquea comandos de shell peligrosos (borrados masivos, etc.).
+- **`secret-scan`** — escanea en busca de secretos/claves antes de actuar.
+- **`pre-commit-secrets`** — evita que se cuelen secretos en un commit.
+
+> Esto **puede añadir prompts de permiso** o bloquear comandos que antes pasaban sin más. Es el
+> comportamiento esperado. Si te estorba, borra los `.sh` correspondientes de `~/.claude/hooks/`
+> (ver [Desinstalar](#desinstalar)).
 
 ## Arrancar
 
 ```
 claude            # abre Claude Code
-/ponytail         # modo vago
+/ponytail         # activa el modo vago (código mínimo)
 /obsidian-init    # prepara tu segundo cerebro
 ```
 
@@ -60,6 +98,30 @@ claude            # abre Claude Code
 - **Manual**: si quieres forzar una actualización ya, re-corre la línea de instalación.
 - **El repo**: un GitHub Action semanal comprueba que las fuentes upstream siguen vivas
   y abre un issue si alguna se mueve o desaparece — así el instalador no se pudre en silencio.
+
+## Desinstalar
+
+No hay desinstalador automático (el kit solo añade cosas, no destruye). Para revertir a mano:
+
+```bash
+# 1. settings.json — restaura el backup que dejó el instalador
+cp ~/.claude/settings.json.bak ~/.claude/settings.json
+
+# 2. hooks de seguridad y auto-actualización
+rm -f ~/.claude/hooks/pre-bash-safety.sh ~/.claude/hooks/pre-commit-secrets.sh \
+      ~/.claude/hooks/secret-scan.sh ~/.claude/hooks/starter-kit-autoupdate.sh
+
+# 3. segundo cerebro (opcional)
+rm -rf ~/.claude/skills/obsidian-second-brain
+
+# 4. plugins (opcional) — cada uno por separado
+claude plugin uninstall ponytail@ponytail
+claude plugin uninstall ecc@ecc
+claude plugin uninstall vercel@claude-plugins-official
+claude plugin uninstall security-guidance@claude-plugins-official
+```
+
+El `~/.claude/CLAUDE.md` lo creó el kit solo si no tenías uno: bórralo o edítalo a tu gusto.
 
 ## Siguiente nivel
 
