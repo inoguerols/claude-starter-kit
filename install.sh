@@ -36,7 +36,7 @@ command -v git >/dev/null 2>&1 || die "Necesitas git instalado."
 HAVE_JQ=1; command -v jq >/dev/null 2>&1 || HAVE_JQ=0
 
 # --- 1. Claude Code ----------------------------------------------------------
-b "1/6  Claude Code"
+b "1/7  Claude Code"
 if ! command -v claude >/dev/null 2>&1; then
   warn "no encontrado; instalando…"
   if curl -fsSL https://claude.ai/install.sh | bash; then :;
@@ -48,7 +48,7 @@ command -v claude >/dev/null 2>&1 || die "Claude Code instalado pero no está en
 ok "$(claude --version 2>/dev/null | head -1)"
 
 # --- 2. marketplaces + plugins ----------------------------------------------
-b "2/6  Plugins"
+b "2/7  Plugins"
 mkt() { # nombre  fuente
   if claude plugin marketplace list 2>/dev/null | grep -q "$1"; then
     claude plugin marketplace update "$1" >/dev/null 2>&1 || true
@@ -72,7 +72,7 @@ plug vercel@claude-plugins-official
 plug security-guidance@claude-plugins-official
 
 # --- 3. kit de seguridad de txampa (hooks) ----------------------------------
-b "3/6  Hooks de seguridad (txampa/claude-code-security-kit)"
+b "3/7  Hooks de seguridad (txampa/claude-code-security-kit)"
 SEC_DIR="$CLAUDE_DIR/.cache/claude-code-security-kit"
 if [ -d "$SEC_DIR/.git" ]; then git -C "$SEC_DIR" pull --quiet || true
 else git clone --quiet https://github.com/txampa/claude-code-security-kit.git "$SEC_DIR"; fi
@@ -105,14 +105,30 @@ else
 fi
 
 # --- 4. segundo cerebro Obsidian --------------------------------------------
-b "4/6  Segundo cerebro (obsidian-second-brain)"
+b "4/7  Segundo cerebro (obsidian-second-brain)"
 OBS_DIR="$SKILLS_DIR/obsidian-second-brain"
 if [ -d "$OBS_DIR/.git" ]; then git -C "$OBS_DIR" pull --quiet || true
 else git clone --quiet https://github.com/eugeniughelbur/obsidian-second-brain.git "$OBS_DIR"; fi
 bash "$OBS_DIR/install.sh" >/dev/null 2>&1 && ok "skill + comandos instalados" || warn "revisa $OBS_DIR/install.sh"
 
-# --- 5. CLAUDE.md con buenas prácticas --------------------------------------
-b "5/6  Buenas prácticas (CLAUDE.md)"
+# --- 5. graphify (grafo de conocimiento del repo) ----------------------------
+b "5/7  Graphify (grafo de conocimiento)"
+if ! command -v uv >/dev/null 2>&1; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 || true
+  case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH";; esac
+fi
+if command -v uv >/dev/null 2>&1; then
+  (uv tool install graphifyy >/dev/null 2>&1 || uv tool upgrade graphifyy >/dev/null 2>&1) \
+    && command -v graphify >/dev/null 2>&1 \
+    && graphify install --platform claude >/dev/null 2>&1 \
+    && ok "graphify instalado (/graphify)" \
+    || warn "no pude instalar graphify (opcional)"
+else
+  warn "no pude instalar 'uv'; graphify omitido (opcional). Instálalo a mano: https://astral.sh/uv"
+fi
+
+# --- 6. CLAUDE.md con buenas prácticas ---------------------------------------
+b "6/7  Buenas prácticas (CLAUDE.md)"
 if [ -f "$CLAUDE_DIR/CLAUDE.md" ]; then
   warn "Ya tienes ~/.claude/CLAUDE.md; no lo toco. Plantilla en $RAW_BASE/templates/CLAUDE.md"
 else
@@ -120,8 +136,8 @@ else
     || warn "no pude descargar la plantilla CLAUDE.md"
 fi
 
-# --- 6. listo ----------------------------------------------------------------
-b "6/6  Listo 🎉"
+# --- 7. listo ----------------------------------------------------------------
+b "7/7  Listo 🎉"
 cat <<'EOF'
 
   Para ACTUALIZAR en el futuro: vuelve a correr la misma línea de instalación.

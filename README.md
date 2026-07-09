@@ -48,6 +48,7 @@ Elige **una** opción y, dentro de ella, pega el comando de instalación:
 | **security-guidance** (oficial Anthropic) | Detecta vulnerabilidades mientras programas. |
 | **claude-code-security-kit** (de [txampa](https://github.com/txampa/claude-code-security-kit)) | Hooks que bloquean comandos peligrosos y escanean secretos antes de cada acción. |
 | **obsidian-second-brain** | Notas, board y research que se auto-mantienen. `/obsidian-init` para arrancar. |
+| **graphify** ([graphifyy](https://pypi.org/project/graphifyy/) por PyPI/`uv`) | Convierte cualquier carpeta o repo en un grafo de conocimiento navegable. Comando `/graphify`. |
 | **CLAUDE.md** | Buenas prácticas + memoria persistente (solo si no tienes ya uno). |
 
 Los plugins se instalan **a nivel de usuario** (`-s user`), así que valen para todos tus proyectos.
@@ -63,8 +64,11 @@ Transparencia total — el instalador solo toca tu carpeta `~/.claude`:
 | `~/.claude/CLAUDE.md` | Se crea con las buenas prácticas **solo si no existe**. Si ya tienes uno, **no se toca**. |
 | `~/.claude/skills/obsidian-second-brain/` | Skill + comandos del segundo cerebro. |
 | `~/.claude/.cache/claude-code-security-kit/` | Copia de trabajo del kit de seguridad (para actualizarse). |
+| `~/.claude/skills/graphify/` | Skill de graphify (opcional: requiere `uv`, se instala solo si falta). |
 
-Nada fuera de `~/.claude` se modifica (salvo añadir `~/.local/bin` a tu `PATH` si tuvo que instalar Claude Code).
+Nada fuera de `~/.claude` se modifica, salvo: `~/.local/bin` en tu `PATH` si tuvo que instalar
+Claude Code, o `uv` (`~/.local/share/uv`) si faltaba y quieres graphify — esto último es opcional
+y el instalador sigue sin morir si no puede instalarlo.
 
 ## Hooks de seguridad
 
@@ -134,6 +138,27 @@ Cosas populares que **no** instala el kit a propósito, para no duplicar lo que 
   vigilar PRs, barrer CI…), mira [`cobusgreyling/loop-engineering`](https://github.com/cobusgreyling/loop-engineering).
   La mecánica (worktrees, sub-agentes, scheduling) ya la tienes vía **ecc** (`/ecc:loop-start`,
   `autonomous-loops`, …); ese repo aporta los patrones curados y las CLIs de coste/auditoría.
+- **Orquestación multi-agente/multi-CLI** (p.ej. [`professorpalmer/Puppetmaster`](https://github.com/professorpalmer/Puppetmaster)):
+  resuelve coordinar varios CLIs de agentes (Claude Code, Cursor, Codex…) a la vez. Si solo usas
+  Claude Code, **ecc** ya cubre worktrees/sub-agentes/loops dentro de un único CLI — no hace falta.
+- **Otro CLAUDE.md de "buenas prácticas de Karpathy"** (p.ej. [`multica-ai/andrej-karpathy-skills`](https://github.com/multica-ai/andrej-karpathy-skills)):
+  mismo caso que el punto de arriba, redundante con **ponytail**.
+- **Colecciones de subagentes de marketing/agencia** (p.ej. [`msitarzewski/agency-agents`](https://github.com/msitarzewski/agency-agents)):
+  la parte de ingeniería solapa casi al 100% con **ecc**; el resto (ads programáticos, sales B2B,
+  redes sociales de mercado chino) no aplica a la mayoría de proyectos.
+- **ASR / transcripción self-hosted** (p.ej. [`achetronic/parakeet`](https://github.com/achetronic/parakeet)):
+  requiere mantener un servidor propio con modelo dedicado. Si solo necesitas transcribir podcasts,
+  vídeos o hilos, `/podcast`, `/youtube` y `/x-read` de **obsidian-second-brain** ya lo resuelven
+  vía API, sin infraestructura.
+- **Librerías de enmascarado de PII para LLMs** (p.ej. [`ploybot-ai/prompt-shield`](https://github.com/ploybot-ai/prompt-shield)):
+  útiles como referencia de patrón de diseño (placeholder reversible tipo `~REDACTED:TIPO#HASH~`),
+  pero evalúa el stack antes de añadir una dependencia — el mismo patrón suele ser un puñado de
+  líneas nativas en tu lenguaje.
+- **Buen gusto de diseño frontend**: si generas mucha UI (React/Vue/HTML) y quieres que deje de
+  parecer genérica, mira [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill)
+  (60k+ ⭐, soporta Claude Code de forma nativa: `npx skills add Leonxlnx/taste-skill`). No lo
+  instala el kit a propósito — es un instalador de terceros y cada quien debe decidir si confía
+  en él antes de correrlo, en vez de que quede horneado en un script que ejecutan otros.
 
 ## Licencia
 
