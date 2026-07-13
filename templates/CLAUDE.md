@@ -25,6 +25,9 @@ Estas reglas aplican a todos los proyectos. Bórralas o adáptalas a tu gusto.
   **workflows en paralelo** y asigna el modelo por tarea: **Opus** para lo crítico (dinero,
   seguridad, lógica compleja), **Sonnet** para UI/API, **Haiku** para andamiaje. Para cambios
   pequeños, directo sin orquestar.
+- **Regla de la 3ª repetición.** Si el usuario te repite una instrucción de proceso por tercera
+  vez, propón en ese momento añadirla a este archivo (o convertirla en hook/skill). Lo que se
+  repite tres veces es configuración, no conversación.
 - **Piensa antes de codear.** Declara tus supuestos y, si algo es ambiguo, dilo y pregunta en
   vez de asumir en silencio. Una pregunta corta ahorra un rehacer largo.
 - **Ejecución dirigida a objetivo.** Antes de empezar, fija el criterio de éxito; al acabar,

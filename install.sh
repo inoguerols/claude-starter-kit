@@ -84,22 +84,29 @@ curl -fsSL "$RAW_BASE/hooks/autoupdate.sh" -o "$HOOKS_DIR/starter-kit-autoupdate
   && chmod +x "$HOOKS_DIR/starter-kit-autoupdate.sh" && ok "auto-actualización instalada" \
   || warn "no pude instalar el hook de auto-actualización"
 
+# hook de aviso de fin de tarea larga (Stop, >90s → notificación del sistema)
+curl -fsSL "$RAW_BASE/hooks/notify-long-task.sh" -o "$HOOKS_DIR/notify-long-task.sh" \
+  && chmod +x "$HOOKS_DIR/notify-long-task.sh" && ok "aviso de fin de tarea instalado" \
+  || warn "no pude instalar el hook de aviso"
+
 # merge de settings: permisos + hooks de seguridad (rutas → \$HOME) + SessionStart de auto-update
 TPL="$(sed 's#\$CLAUDE_PROJECT_DIR/.claude/hooks#$HOME/.claude/hooks#g' "$SEC_DIR/settings.template.json")"
 SETTINGS="$CLAUDE_DIR/settings.json"
 SU='[{"hooks":[{"type":"command","command":"bash \"$HOME/.claude/hooks/starter-kit-autoupdate.sh\"","async":true}]}]'
+STOP='[{"matcher":"","hooks":[{"type":"command","command":"bash \"$HOME/.claude/hooks/notify-long-task.sh\"","timeout":10,"async":true}]}]'
 if [ "$HAVE_JQ" -eq 0 ]; then
   warn "jq no instalado: no fusiono settings ni activo la auto-actualización."
   warn "Instala jq y re-ejecuta. Plantilla a mano: $SEC_DIR/settings.template.json"
 else
   [ -f "$SETTINGS" ] && cp "$SETTINGS" "$SETTINGS.bak" || echo '{}' > "$SETTINGS.bak"
-  printf '%s' "$TPL" | jq -s --argjson su "$SU" '
+  printf '%s' "$TPL" | jq -s --argjson su "$SU" --argjson stop "$STOP" '
     .[0] as $cur | .[1] as $tpl | $cur
     | .permissions.deny   = (((.permissions.deny   // []) + ($tpl.permissions.deny   // [])) | unique)
     | .permissions.ask    = (((.permissions.ask    // []) + ($tpl.permissions.ask    // [])) | unique)
     | .permissions.allow  = (((.permissions.allow  // []) + ($tpl.permissions.allow  // [])) | unique)
     | .hooks.PreToolUse   = (((.hooks.PreToolUse   // []) + ($tpl.hooks.PreToolUse   // [])) | unique)
     | .hooks.SessionStart = (((.hooks.SessionStart // []) + $su) | unique)
+    | .hooks.Stop         = (((.hooks.Stop         // []) + $stop) | unique)
   ' "$SETTINGS.bak" /dev/stdin > "$SETTINGS"
   ok "settings.json fusionado + auto-actualización activada (backup en settings.json.bak)"
 fi
@@ -127,8 +134,17 @@ else
   warn "no pude instalar 'uv'; graphify omitido (opcional). Instálalo a mano: https://astral.sh/uv"
 fi
 
-# --- 6. CLAUDE.md con buenas prácticas ---------------------------------------
-b "6/7  Buenas prácticas (CLAUDE.md)"
+# --- 6. CLAUDE.md con buenas prácticas + skills de flujo ----------------------
+b "6/7  Buenas prácticas (CLAUDE.md) y skills de flujo"
+# skills genéricas de flujo de trabajo — solo si no las tienes ya (respeta tus versiones personalizadas)
+for s in despega cierra ninera-prs; do
+  if [ -f "$SKILLS_DIR/$s/SKILL.md" ]; then ok "skill /$s ya existe; no la toco"
+  else
+    mkdir -p "$SKILLS_DIR/$s"
+    curl -fsSL "$RAW_BASE/skills/$s/SKILL.md" -o "$SKILLS_DIR/$s/SKILL.md" && ok "skill /$s instalada" \
+      || warn "no pude instalar la skill $s"
+  fi
+done
 if [ -f "$CLAUDE_DIR/CLAUDE.md" ]; then
   warn "Ya tienes ~/.claude/CLAUDE.md; no lo toco. Plantilla en $RAW_BASE/templates/CLAUDE.md"
 else

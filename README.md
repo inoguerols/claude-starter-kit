@@ -50,6 +50,8 @@ Elige **una** opción y, dentro de ella, pega el comando de instalación:
 | **obsidian-second-brain** | Notas, board y research que se auto-mantienen. `/obsidian-init` para arrancar. |
 | **graphify** ([graphifyy](https://pypi.org/project/graphifyy/) por PyPI/`uv`) | Convierte cualquier carpeta o repo en un grafo de conocimiento navegable. Comando `/graphify`. |
 | **CLAUDE.md** | Buenas prácticas + memoria persistente (solo si no tienes ya uno). |
+| **Skills de flujo** (`/despega`, `/cierra`, `/ninera-prs`) | El ritual de trabajar por worktrees en tres comandos: arrancar una feature lista (worktree + rama + deps + env), cerrarla limpia sin perder trabajo, y evaluar las PRs abiertas (dependabot seguro se mergea; externas, informe + borrador). Solo si no las tienes ya. |
+| **Aviso de fin de tarea** | Hook `Stop`: notificación del sistema cuando una tarea de >90 s termina. Deja de preguntar "¿cómo vas?" — te avisa él. |
 
 Los plugins se instalan **a nivel de usuario** (`-s user`), así que valen para todos tus proyectos.
 
@@ -59,8 +61,9 @@ Transparencia total — el instalador solo toca tu carpeta `~/.claude`:
 
 | Ruta | Qué pasa |
 |---|---|
-| `~/.claude/settings.json` | **Se fusiona** (no se reemplaza): añade reglas de permiso `deny`/`ask`, los hooks de seguridad (`PreToolUse`) y la auto-actualización (`SessionStart`). Backup en `settings.json.bak`. |
-| `~/.claude/hooks/*.sh` | Se copian los hooks de seguridad de txampa + el de auto-actualización. |
+| `~/.claude/settings.json` | **Se fusiona** (no se reemplaza): añade reglas de permiso `deny`/`ask`, los hooks de seguridad (`PreToolUse`), la auto-actualización (`SessionStart`) y el aviso de fin de tarea (`Stop`). Backup en `settings.json.bak`. |
+| `~/.claude/hooks/*.sh` | Se copian los hooks de seguridad de txampa + el de auto-actualización + el de aviso de fin de tarea. |
+| `~/.claude/skills/{despega,cierra,ninera-prs}/` | Skills de flujo de worktrees y PRs — **solo si no existen** (tus versiones personalizadas no se tocan). |
 | `~/.claude/CLAUDE.md` | Se crea con las buenas prácticas **solo si no existe**. Si ya tienes uno, **no se toca**. |
 | `~/.claude/skills/obsidian-second-brain/` | Skill + comandos del segundo cerebro. |
 | `~/.claude/.cache/claude-code-security-kit/` | Copia de trabajo del kit de seguridad (para actualizarse). |
@@ -113,7 +116,11 @@ cp ~/.claude/settings.json.bak ~/.claude/settings.json
 
 # 2. hooks de seguridad y auto-actualización
 rm -f ~/.claude/hooks/pre-bash-safety.sh ~/.claude/hooks/pre-commit-secrets.sh \
-      ~/.claude/hooks/secret-scan.sh ~/.claude/hooks/starter-kit-autoupdate.sh
+      ~/.claude/hooks/secret-scan.sh ~/.claude/hooks/starter-kit-autoupdate.sh \
+      ~/.claude/hooks/notify-long-task.sh
+
+# 2b. skills de flujo (opcional)
+rm -rf ~/.claude/skills/despega ~/.claude/skills/cierra ~/.claude/skills/ninera-prs
 
 # 3. segundo cerebro (opcional)
 rm -rf ~/.claude/skills/obsidian-second-brain
